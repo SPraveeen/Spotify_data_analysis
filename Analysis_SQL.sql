@@ -87,3 +87,73 @@ select count(track), artist
 from spotify
 group by artist
 order by 1 desc;
+
+------------------------------
+-- Medium Level
+------------------------------
+--1.Calculate the average danceability of tracks in each album.
+--2.Find the top 5 tracks with the highest energy values.
+--3.List all tracks along with their views and likes where official_video = TRUE.
+--4.For each album, calculate the total views of all associated tracks.
+--5.Retrieve the track names that have been streamed on Spotify more than YouTube.
+
+
+--1.Calculate the average danceability of tracks in each album.
+select album,avg(danceability) as avg_danceability
+from spotify
+group by 1
+order by 2 desc;
+
+--2.Find the top 5 tracks with the highest energy values.
+select track,
+max(energy) from spotify
+group by 1
+order by 2 desc
+limit 5;
+
+--3.List all tracks along with their views and likes where official_video = TRUE.
+select track,sum(views) as total_views,sum(likes)as total_likes 
+from spotify
+where official_video='true'
+group by 1
+order by 2 desc;
+
+--4.For each album, calculate the total views of all associated tracks.
+select album,track, sum(views) as total_views 
+from spotify
+group by 1,2
+order by 3 desc;
+
+--5.Retrieve the track names that have been streamed on Spotify more than YouTube.
+/*
+select track,count(*) as total_count from spotify
+where most_played_on ='Spotify'
+group by track
+order by 2 desc;
+
+select track,count(*) as total_count from spotify
+where most_played_on ='Youtube'
+group by track
+order by 2 desc;
+*/
+
+select * from (
+select track,
+coalesce(sum(case when most_played_on='Youtube' then stream end ),0) as streamed_on_Youtube,
+coalesce(sum(case when most_played_on='Spotify' then stream end ),0) as streamed_on_Spotify
+from spotify
+group by 1
+) as t1
+where streamed_on_Spotify > streamed_on_Youtube
+and 
+streamed_on_Youtube<>0;
+
+/*
+Advanced Level
+
+Find the top 3 most-viewed tracks for each artist using window functions.
+Write a query to find tracks where the liveness score is above the average.
+Use a WITH clause to calculate the difference between the highest and lowest energy values for tracks in each album.
+Find tracks where the energy-to-liveness ratio is greater than 1.2.
+Calculate the cumulative sum of likes for tracks ordered by the number of views, using window functions.
+*/
